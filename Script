@@ -1,0 +1,432 @@
+#!/bin/bash
+################################################################################                                                                             ##############
+
+scripts=/usr/local/bin
+trap "echo 'Control-C cannot be used' ; sleep 1 ; clear ; continue " 1 2 3
+
+VERSION=1.0.0
+
+HOST="hostname";
+
+Red="$(tput bold ; tput setaf 1)"
+Green="$(tput bold ; tput setaf 2)"
+ResetColor="$(tput sgr0)"
+
+#===============================================================================                                                                             =============
+#==========                Deployed POSTFIX IN SERVERS                                                                                                         ===========
+#===============================================================================                                                                             =============
+
+
+NoOFRunningProcess()
+
+{
+
+COUNT=`ps -ef | grep sshpass | grep -v grep | wc -l`
+
+if [[ $COUNT -ge 50 ]] # We want only 50 threds to be executed at any point of t                                                                             ime if less than 50 will continue form the next ipaddress
+
+then
+
+sleep 10 # There is not point to check instantly a sleep is required to to give                                                                              breath to memory of the test controler server
+
+free && sync && echo 3 > /proc/sys/vm/drop_caches && free
+
+NoOFRunningProcess
+
+fi
+
+}
+
+
+#===============================================================================                                                                             =============
+#==========                Deployed POSTFIX IN SERVERS                                                                                                         ===========
+#===============================================================================                                                                             =============
+
+
+processDeployPostfix()
+{
+
+
+OLDIFS=$IFS
+IFS=":"
+
+
+#[ ! -f $1 ] && { echo "$1 file not found"; exit 99; }
+
+    while  read IPaddress Login Password;
+    do
+
+
+     echo -e "${ResetColor}"
+
+     PARAM="$Login@$IPaddress"
+
+     #SCR=${HOST/PASSWORD/${Password}}
+
+     #echo $Password $Login $IPaddress
+
+     OUTPUT=$(sshpass -p ${Password} ssh -n  ${PARAM} ${HOST})
+
+     printf '\n\n'
+
+     echo -e "------------------------------------------------------------------                                                                             -------------------------------------------"
+
+     printf ' Deployment of POSTFIX on the server [ %s : %s ] status : ' "${OUTP                                                                             UT}" "${IPaddress}"
+
+     echo -e "\n----------------------------------------------------------------                                                                             ---------------------------------------------"
+
+
+
+
+
+    SCRIPT="apt-get -y install postfix && apt-get -y install mailutils"
+
+    #SCR=${SCRIPT/PASSWORD/${Password}}
+
+    #SCRIPT="ls -l && whoami"
+
+
+
+     DATE=`date +%Y-%m-%d--%H-%M-%S`
+
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #----  Command install  All services Positfix            -------------------                                                                             -----------------------------
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+
+
+     printf '[%s : Command : %s] status : Result, the output was :' "${DATE}" "$                                                                             {SCRIPT}"
+
+     echo -e "${Red}"
+
+    OUTPUT=$(sshpass -p ${Password} ssh  -n  -o StrictHostKeyChecking=no ${PARAM                                                                             } ${SCRIPT})
+
+     if [ $? -gt 0 ]; then
+
+        printf '%s\n' "${OUTPUT}"
+
+        printf 'Command Status : failed.........................................                                                                             ..............[NOT ok]'
+
+       continue
+
+     else
+
+        echo -e "${Green}"
+
+        printf '%s\n' "${OUTPUT}"
+
+        printf 'Command Status : successful.....................................                                                                             ..................[ok]'
+
+
+     fi
+
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #----  Command copy file main.cf Postfix  in servers distant         -------                                                                             -----------------------------
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+
+     echo -e "${ResetColor}"
+
+     printf '\n\n[%s : Command : scp -r main.cf root@%s:/etc/postfix/] status :                                                                              the output was :\n' "${DATE}" "${IPaddress}"
+
+     echo -e "${Green}"
+
+
+    if SCRIPT=$(sshpass -p ${Password}  scp -rv /etc/postfix/main.cf  root@${IPa                                                                             ddress}:/etc/postfix/)  ;then
+
+
+
+              printf 'Command Status : successful...............................                                                                             ........................[ok]'
+
+           else
+
+              echo -e "${Red}"
+
+              printf 'Command Status : failed...................................                                                                             ....................[NOT ok]'
+
+     fi
+
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #----  Command copy file sasl_passwd.d Postfix  in servers distant   -------                                                                             -----------------------------
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+
+     echo -e "${ResetColor}"
+
+     printf '\n\n[%s : Command : scp -r sasl_passwd.db root@%s:/etc/postfix/] st                                                                             atus : the output was :\n' "${DATE}" "${IPaddress}"
+
+     echo -e "${Green}"
+
+    if SCRIPT=$(sshpass -p ${Password}  scp -rv /etc/postfix/sasl_passwd.db  roo                                                                             t@${IPaddress}:/etc/postfix/)  ;then
+
+
+
+              printf 'Command Status : successful...............................                                                                             ........................[ok]'
+
+           else
+
+              echo -e "${Red}"
+
+              printf 'Command Status : failed...................................                                                                             ....................[NOT ok]'
+
+     fi
+
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #----  Command restart Postfix service in servers distant            -------                                                                             -----------------------------
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+
+     echo -e "${ResetColor}"
+
+     printf '\n\n[%s : Command : service postfix restart ] status : the output w                                                                             as :\n' "${DATE}"
+
+     echo -e "${Green}"
+
+     SCRIPT="service postfix restart"
+
+     #SCR=${SCRIPT/PASSWORD/${Password}}
+
+
+     if OUTPUT=$(sshpass -p ${Password} ssh -n ${PARAM} ${SCRIPT}); then
+
+
+
+              printf 'Command Status : successful...............................                                                                             ........................[ok]'
+
+
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #----  Envoie Des Mails de test depuis servers POSTFIX               -------                                                                             -----------------------------
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+
+     SCRIPT="echo 'Juste un eMail bidon de test de bonne fonctionnement Du POSTF                                                                             IX' | mail -s '${IPaddress}_Test' Supervision@ophony.com"
+
+     OUTPUT=$(sshpass -p ${Password} ssh -n ${PARAM} ${SCRIPT})
+
+
+           else
+
+              printf '%s\n' "${OUTPUT}"
+
+              echo -e "${Red}"
+
+              printf 'Command Status : failed...................................                                                                             ....................[NOT ok]'
+
+     fi
+
+
+
+    echo -e "${ResetColor}"
+
+
+done < $1
+
+
+IFS=$OLDIFS
+
+}
+
+
+
+
+#===============================================================================                                                                             =============
+#==========       Deployed ALL OTHERS SERVICES AND COMMANDS IN ALL SERVERS                                                                                     ===========
+#===============================================================================                                                                             =============
+
+processDeployGeneric()
+{
+
+while IFS=':' read IPaddress Login Password
+    do
+
+    cat $2 | while read CommandLine
+        do
+
+     echo -e "${ResetColor}"
+
+     TAG=$(echo $CommandLine | cut -c1)
+
+     if [ "$TAG" == "#" ]; then
+
+
+           continue
+
+
+     fi
+
+     PARAM="$Login@$IPaddress"
+
+     #SCR=${HOST/PASSWORD/${Password}}
+
+     #echo $CommandLine
+
+     OUTPUT=$(sshpass -p ${Password} ssh -n  ${PARAM} ${HOST})
+
+     printf '\n'
+
+     echo -e "------------------------------------------------------------------                                                                             ---------------------------------------------------"
+
+     printf ' %s [ %s : %s ] status : ' "$3" "$OUTPUT" "${IPaddress}"                                                                                        
+
+     echo -e "\n----------------------------------------------------------------                                                                             -----------------------------------------------------"
+
+
+
+     #SCR=${CommandLine/PASSWORD/${Password}}
+
+
+
+
+     DATE=`date +%Y-%m-%d--%H-%M-%S`
+
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #----  All Command install                               -------------------                                                                             -----------------------------
+    #---------------------------------------------------------------------------                                                                             -----------------------------
+
+
+    echo -e "${ResetColor}"
+
+
+
+     command="scp"
+
+       var1=$(echo $CommandLine | cut -d" " -f 1)
+
+       if [ "$var1" != "$command" ]; then
+
+       printf '[%s : Command : %s] status : Result, the output was :\n\n' "${DAT                                                                             E}" "${CommandLine}"
+
+       CommandLine=$(echo $CommandLine | sed "s/#passwd/$Password/g")
+
+       echo "la commande : $CommandLine"
+
+       OUTPUT=$(sshpass -p ${Password} ssh -n  ${PARAM} ${CommandLine})
+
+       else
+
+
+       #scp -rv /etc/postfix/main.cf  user@host:/etc/postfix/
+
+       CommandLine=$(echo $CommandLine | sed "s/user@host/$PARAM/g")
+
+
+
+       printf '[%s : Command : %s] status : Result, the output was :\n\n' "${DAT                                                                             E}" "${CommandLine}"
+
+
+       OUTPUT=$(sshpass -p ${Password} ${CommandLine})
+
+       fi
+
+
+     if [ $? -gt 0  ]; then
+
+        echo -e "${Red}"
+
+        printf '%s\n' "${OUTPUT}"
+
+        printf 'Command Status : failed.........................................                                                                             ..............[NOT ok]'
+
+
+     else
+
+
+        echo -e "${Green}"
+
+        printf '%s\n' "${OUTPUT}"
+
+        printf 'Command Status : successful.....................................                                                                             ..................[ok]'
+
+
+    fi
+
+
+    echo -e "${ResetColor}"
+ done
+
+done < $1
+
+
+}
+
+
+#===============================================================================                                                                             =============
+#==========                 FUNCTION MENU PRINCIPAL                                                                                                            ===========
+#===============================================================================                                                                             =============
+menu_main()
+{
+while true
+do
+clear
+cat << "EOT"
+
+----------------------------------------------------------
+--               MENU OF CHOICES                        --
+----------------------------------------------------------
+--                                                      --
+-- a ) | enter the CSV file[server settings]            --
+----------------------------------------------------------
+--                                                      --
+-- b ) | enter the command file to deploy               --
+----------------------------------------------------------
+--                                                      --
+-- c ) | start the deployment process [Agent CHECK_MK]  --
+----------------------------------------------------------
+----------------------------------------------------------
+--                                                      --
+-- d ) | start the deployment process [POSTFIX]         --
+----------------------------------------------------------
+----------------------------------------------------------
+--                                                      --
+-- e ) | start the deployment process [APACHE/MYSQL]    --
+----------------------------------------------------------
+----------------------------------------------------------
+--                                                      --
+-- f ) | start the deployment process [DDOS Strategy]   --
+----------------------------------------------------------
+----------------------------------------------------------
+--                                                      --
+-- g ) | start the deployment process [GEO REJECT]      --
+----------------------------------------------------------
+--                                                      --
+--                                                      --
+-- q ) | QUIT (Leave this menu program)                 --
+----------------------------------------------------------
+
+Please type a choiceletter (from the above choices)
+then press the RETURN key :
+
+EOT
+
+read answer
+clear
+case "$answer" in
+[aA]*) echo -n "Enter the CSV file[server settings] : "; read FileServer ;;
+[bB]*) echo -n "Enter the command file to deploy : "; read FileCommand ;;
+[cC]*) processDeployGeneric $FileServer $FileCommand "Deployment and Configurati                                                                             on Agent CHECK_MK in server";;
+[dD]*) processDeployPostfix $FileServer ;;
+[eE]*) processDeployGeneric $FileServer $FileCommand "Deployement and Configurat                                                                             ion APACHE/MYSQL in server";;
+[fF]*) processDeployGeneric $FileServer $FileCommand "Deployment DDOS STRATEGY i                                                                             n server";;
+[gG]*) processDeployGeneric $FileServer $FileCommand "Deployment REJECT GEO STRA                                                                             TEGY in server";;
+[Qq]*)  echo "Quitting the menu program" ; exit 0 ;;
+*)      echo "Please choose an option which is displayed on the menu" ;;
+esac
+echo ""
+echo "PRESS RETURN FOR THE MENU"
+read dummy
+done
+}
+#===============================================================================                                                                             =============
+#==========                 MAIN PROGRAM                                                                                                                       ===========
+#===============================================================================                                                                             =============
+
+clear
+cat << "EOT"
+                   DEPLOYMENT-SCRIPT
+                              
+Script_OPHONY deploy                                Program Version 1.0.0 :                                                                               
+   Welcome to Script_OPHONY. This deployment script is a module that allows to
+   deploy an IPTable firewall configuration and installation and configuration
+   of Postfix on several remote servers and automatically: develop within the
+   program of the PFE [@autors: wassim felfel].
+
+EOT
+
+sleep 5
+
+menu_main
