@@ -1,0 +1,17 @@
+#deployment of the check-mk-agent
+wget http://mathias-kettner.de/download/check-mk-agent_1.2.4p5-2_all.deb
+dpkg -i check-mk-agent_1.2.4p5-2_all.deb
+apt-get -y install xinetd
+scp -rv /etc/xinetd.d/check_mk user@host:/etc/xinetd.d/
+service xinetd restart
+
+
+
+
+#deployment and configuration of mysql and apache
+
+scp -rv /opt/omd/versions/1.4.0p27.cre/share/check_mk/agents/plugins/mk_mysql user@host:/usr/lib/check_mk_agent/plugins 
+printf '[client] \n user=root \n password=#passwd' > /etc/check_mk/mysql.cfg
+chmod 400 /etc/check_mk/mysql.cfg 
+
+scp -rv /opt/omd/versions/1.4.0p27.cre/share/check_mk/agents/plugins/apache_status $user@$host:/usr/lib/check_mk_agent/plugins/ 
