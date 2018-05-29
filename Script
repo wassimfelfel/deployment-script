@@ -1,5 +1,5 @@
 #!/bin/bash
-################################################################################                                                                             ##############
+##############################################################################################
 
 scripts=/usr/local/bin
 trap "echo 'Control-C cannot be used' ; sleep 1 ; clear ; continue " 1 2 3
@@ -12,9 +12,9 @@ Red="$(tput bold ; tput setaf 1)"
 Green="$(tput bold ; tput setaf 2)"
 ResetColor="$(tput sgr0)"
 
-#===============================================================================                                                                             =============
-#==========                Deployed POSTFIX IN SERVERS                                                                                                         ===========
-#===============================================================================                                                                             =============
+#============================================================================================
+#==========                Deployed POSTFIX IN SERVERS                        ===========
+#============================================================================================
 
 
 NoOFRunningProcess()
@@ -23,11 +23,11 @@ NoOFRunningProcess()
 
 COUNT=`ps -ef | grep sshpass | grep -v grep | wc -l`
 
-if [[ $COUNT -ge 50 ]] # We want only 50 threds to be executed at any point of t                                                                             ime if less than 50 will continue form the next ipaddress
+if [[ $COUNT -ge 50 ]] # We want only 50 threds to be executed at any point of time if less than 50 will continue form the next ipaddress
 
 then
 
-sleep 10 # There is not point to check instantly a sleep is required to to give                                                                              breath to memory of the test controler server
+sleep 10 # There is not point to check instantly a sleep is required to to give breath to memory of the test controler server
 
 free && sync && echo 3 > /proc/sys/vm/drop_caches && free
 
@@ -38,9 +38,9 @@ fi
 }
 
 
-#===============================================================================                                                                             =============
-#==========                Deployed POSTFIX IN SERVERS                                                                                                         ===========
-#===============================================================================                                                                             =============
+#============================================================================================
+#==========                Deployed POSTFIX IN SERVERS                           ===========
+#============================================================================================
 
 
 processDeployPostfix()
@@ -69,11 +69,11 @@ IFS=":"
 
      printf '\n\n'
 
-     echo -e "------------------------------------------------------------------                                                                             -------------------------------------------"
+     echo -e "-------------------------------------------------------------------------------------------------------------"
 
-     printf ' Deployment of POSTFIX on the server [ %s : %s ] status : ' "${OUTP                                                                             UT}" "${IPaddress}"
+     printf ' Deployment of POSTFIX on the server [ %s : %s ] status : ' "${OUTPUT}" "${IPaddress}"
 
-     echo -e "\n----------------------------------------------------------------                                                                             ---------------------------------------------"
+     echo -e "\n-------------------------------------------------------------------------------------------------------------"
 
 
 
@@ -89,22 +89,22 @@ IFS=":"
 
      DATE=`date +%Y-%m-%d--%H-%M-%S`
 
-    #---------------------------------------------------------------------------                                                                             -----------------------------
-    #----  Command install  All services Positfix            -------------------                                                                             -----------------------------
-    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #--------------------------------------------------------------------------------------------------------
+    #----  Command install  All services Positfix            ------------------------------------------------
+    #--------------------------------------------------------------------------------------------------------
 
 
-     printf '[%s : Command : %s] status : Result, the output was :' "${DATE}" "$                                                                             {SCRIPT}"
+     printf '[%s : Command : %s] status : Result, the output was :' "${DATE}" "${SCRIPT}"
 
      echo -e "${Red}"
 
-    OUTPUT=$(sshpass -p ${Password} ssh  -n  -o StrictHostKeyChecking=no ${PARAM                                                                             } ${SCRIPT})
+    OUTPUT=$(sshpass -p ${Password} ssh  -n  -o StrictHostKeyChecking=no ${PARAM} ${SCRIPT})
 
      if [ $? -gt 0 ]; then
 
         printf '%s\n' "${OUTPUT}"
 
-        printf 'Command Status : failed.........................................                                                                             ..............[NOT ok]'
+        printf 'Command Status : failed.......................................................[NOT ok]'
 
        continue
 
@@ -114,67 +114,67 @@ IFS=":"
 
         printf '%s\n' "${OUTPUT}"
 
-        printf 'Command Status : successful.....................................                                                                             ..................[ok]'
+        printf 'Command Status : successful.......................................................[ok]'
 
 
      fi
 
-    #---------------------------------------------------------------------------                                                                             -----------------------------
-    #----  Command copy file main.cf Postfix  in servers distant         -------                                                                             -----------------------------
-    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #--------------------------------------------------------------------------------------------------------
+    #----  Command copy file main.cf Postfix  in servers distant         ------------------------------------
+    #--------------------------------------------------------------------------- -----------------------------
 
      echo -e "${ResetColor}"
 
-     printf '\n\n[%s : Command : scp -r main.cf root@%s:/etc/postfix/] status :                                                                              the output was :\n' "${DATE}" "${IPaddress}"
+     printf '\n\n[%s : Command : scp -r main.cf root@%s:/etc/postfix/] status :the output was :\n' "${DATE}" "${IPaddress}"
 
      echo -e "${Green}"
 
 
-    if SCRIPT=$(sshpass -p ${Password}  scp -rv /etc/postfix/main.cf  root@${IPa                                                                             ddress}:/etc/postfix/)  ;then
+    if SCRIPT=$(sshpass -p ${Password}  scp -rv /etc/postfix/main.cf  root@${IPaddress}:/etc/postfix/)  ;then
 
 
 
-              printf 'Command Status : successful...............................                                                                             ........................[ok]'
+              printf 'Command Status : successful.......................................................[ok]'
 
            else
 
               echo -e "${Red}"
 
-              printf 'Command Status : failed...................................                                                                             ....................[NOT ok]'
+              printf 'Command Status : failed.......................................................[NOT ok]'
 
      fi
 
-    #---------------------------------------------------------------------------                                                                             -----------------------------
-    #----  Command copy file sasl_passwd.d Postfix  in servers distant   -------                                                                             -----------------------------
-    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #--------------------------------------------------------------------------------------------------------
+    #----  Command copy file sasl_passwd.d Postfix  in servers distant   ------------------------------------
+    #--------------------------------------------------------------------------------------------------------
 
      echo -e "${ResetColor}"
 
-     printf '\n\n[%s : Command : scp -r sasl_passwd.db root@%s:/etc/postfix/] st                                                                             atus : the output was :\n' "${DATE}" "${IPaddress}"
+     printf '\n\n[%s : Command : scp -r sasl_passwd.db root@%s:/etc/postfix/] status : the output was :\n' "${DATE}" "${IPaddress}"
 
      echo -e "${Green}"
 
-    if SCRIPT=$(sshpass -p ${Password}  scp -rv /etc/postfix/sasl_passwd.db  roo                                                                             t@${IPaddress}:/etc/postfix/)  ;then
+    if SCRIPT=$(sshpass -p ${Password}  scp -rv /etc/postfix/sasl_passwd.db  root@${IPaddress}:/etc/postfix/)  ;then
 
 
 
-              printf 'Command Status : successful...............................                                                                             ........................[ok]'
+              printf 'Command Status : successful.......................................................[ok]'
 
            else
 
               echo -e "${Red}"
 
-              printf 'Command Status : failed...................................                                                                             ....................[NOT ok]'
+              printf 'Command Status : failed.......................................................[NOT ok]'
 
      fi
 
-    #---------------------------------------------------------------------------                                                                             -----------------------------
-    #----  Command restart Postfix service in servers distant            -------                                                                             -----------------------------
-    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #--------------------------------------------------------------------------------------------------------
+    #----  Command restart Postfix service in servers distant            ------------------------------------
+    #--------------------------------------------------------------------------------------------------------
 
      echo -e "${ResetColor}"
 
-     printf '\n\n[%s : Command : service postfix restart ] status : the output w                                                                             as :\n' "${DATE}"
+     printf '\n\n[%s : Command : service postfix restart ] status : the output was :\n' "${DATE}"
 
      echo -e "${Green}"
 
@@ -187,14 +187,14 @@ IFS=":"
 
 
 
-              printf 'Command Status : successful...............................                                                                             ........................[ok]'
+              printf 'Command Status : successful.......................................................[ok]'
 
 
-    #---------------------------------------------------------------------------                                                                             -----------------------------
-    #----  Envoie Des Mails de test depuis servers POSTFIX               -------                                                                             -----------------------------
-    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #--------------------------------------------------------------------------------------------------------
+    #----  Envoie Des Mails de test depuis servers POSTFIX               ------- -----------------------------
+    #--------------------------------------------------------------------------------------------------------
 
-     SCRIPT="echo 'Juste un eMail bidon de test de bonne fonctionnement Du POSTF                                                                             IX' | mail -s '${IPaddress}_Test' Supervision@ophony.com"
+     SCRIPT="echo 'Juste un eMail bidon de test de bonne fonctionnement Du POSTFIX' | mail -s '${IPaddress}_Test' Supervision@ophony.com"
 
      OUTPUT=$(sshpass -p ${Password} ssh -n ${PARAM} ${SCRIPT})
 
@@ -205,7 +205,7 @@ IFS=":"
 
               echo -e "${Red}"
 
-              printf 'Command Status : failed...................................                                                                             ....................[NOT ok]'
+              printf 'Command Status : failed.......................................................[NOT ok]'
 
      fi
 
@@ -224,9 +224,9 @@ IFS=$OLDIFS
 
 
 
-#===============================================================================                                                                             =============
-#==========       Deployed ALL OTHERS SERVICES AND COMMANDS IN ALL SERVERS                                                                                     ===========
-#===============================================================================                                                                             =============
+#============================================================================================
+#==========       Deployed ALL OTHERS SERVICES AND COMMANDS IN ALL SERVERS   ===========
+#============================================================================================
 
 processDeployGeneric()
 {
@@ -259,11 +259,11 @@ while IFS=':' read IPaddress Login Password
 
      printf '\n'
 
-     echo -e "------------------------------------------------------------------                                                                             ---------------------------------------------------"
+     echo -e "---------------------------------------------------------------------------------------------------------------------"
 
      printf ' %s [ %s : %s ] status : ' "$3" "$OUTPUT" "${IPaddress}"                                                                                        
 
-     echo -e "\n----------------------------------------------------------------                                                                             -----------------------------------------------------"
+     echo -e "\n---------------------------------------------------------------------------------------------------------------------"
 
 
 
@@ -274,9 +274,9 @@ while IFS=':' read IPaddress Login Password
 
      DATE=`date +%Y-%m-%d--%H-%M-%S`
 
-    #---------------------------------------------------------------------------                                                                             -----------------------------
-    #----  All Command install                               -------------------                                                                             -----------------------------
-    #---------------------------------------------------------------------------                                                                             -----------------------------
+    #--------------------------------------------------------------------------------------------------------
+    #----  All Command install                               ------------------------------------------------
+    #--------------------------------------------------------------------------------------------------------
 
 
     echo -e "${ResetColor}"
@@ -289,7 +289,7 @@ while IFS=':' read IPaddress Login Password
 
        if [ "$var1" != "$command" ]; then
 
-       printf '[%s : Command : %s] status : Result, the output was :\n\n' "${DAT                                                                             E}" "${CommandLine}"
+       printf '[%s : Command : %s] status : Result, the output was :\n\n' "${DATE}" "${CommandLine}"
 
        CommandLine=$(echo $CommandLine | sed "s/#passwd/$Password/g")
 
@@ -306,7 +306,7 @@ while IFS=':' read IPaddress Login Password
 
 
 
-       printf '[%s : Command : %s] status : Result, the output was :\n\n' "${DAT                                                                             E}" "${CommandLine}"
+       printf '[%s : Command : %s] status : Result, the output was :\n\n' "${DATE}" "${CommandLine}"
 
 
        OUTPUT=$(sshpass -p ${Password} ${CommandLine})
@@ -320,7 +320,7 @@ while IFS=':' read IPaddress Login Password
 
         printf '%s\n' "${OUTPUT}"
 
-        printf 'Command Status : failed.........................................                                                                             ..............[NOT ok]'
+        printf 'Command Status : failed.......................................................[NOT ok]'
 
 
      else
@@ -330,7 +330,7 @@ while IFS=':' read IPaddress Login Password
 
         printf '%s\n' "${OUTPUT}"
 
-        printf 'Command Status : successful.....................................                                                                             ..................[ok]'
+        printf 'Command Status : successful.......................................................[ok]'
 
 
     fi
@@ -345,9 +345,9 @@ done < $1
 }
 
 
-#===============================================================================                                                                             =============
-#==========                 FUNCTION MENU PRINCIPAL                                                                                                            ===========
-#===============================================================================                                                                             =============
+#============================================================================================
+#==========                 FUNCTION MENU PRINCIPAL                        ===========
+#============================================================================================
 menu_main()
 {
 while true
